@@ -18,26 +18,65 @@ export default function Predict() {
     setIsLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const riderName = formData.get("rider-name") as string;
+    const year = Number(formData.get("race-year"));
+    const country = formData.get("rider-country") as string;
+    const team = formData.get("team") as string;
+    const timeHours = Number(formData.get("time-hours"));
 
-    // Placeholder for FastAPI integration
-    setTimeout(() => {
-      setPrediction({
-        rider: riderName,
-        probability: "78.5%",
-        confidence: "High",
-        factors: [
-          "Strong mountain climbing performance",
-          "Consistent time trial results",
-          "Recent form improvements"
-        ]
+    try {
+      const response = await fetch("http://127.0.0.1:8000/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          year: year,
+          time_hours: timeHours,
+          country: country,
+          team: team
+        }),
       });
-      setIsLoading(false);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Check if there's an error in the response
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setPrediction({
+        year: year,
+        country: country,
+        team: team,
+        timeHours: timeHours,
+        probability: data.probability,
+        confidence: data.confidence,
+        winnerPrediction: data.winner_prediction,
+        factors: [
+          `Race Year: ${year}`,
+          `Rider's Country: ${country}`,
+          `Team: ${team}`,
+          `Time: ${timeHours} hours`,
+          `Prediction: ${data.winner_prediction === 1 ? 'Likely Winner 🏆' : 'Not Predicted to Win'}`,
+        ],
+      });
+
       toast({
         title: "Prediction Complete",
-        description: `Analysis for ${riderName} is ready!`,
+        description: `Analysis for ${country} rider is ready!`,
       });
-    }, 1500);
+    } catch (error) {
+      console.error("Prediction error:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to fetch prediction. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -75,11 +114,23 @@ export default function Predict() {
               <CardContent>
                 <form onSubmit={handlePredict} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="rider-name">Rider Name</Label>
+                    <Label htmlFor="race-year">Race Year</Label>
                     <Input
-                      id="rider-name"
-                      name="rider-name"
-                      placeholder="e.g., Tadej Pogačar"
+                      id="race-year"
+                      name="race-year"
+                      placeholder="e.g., 2022"
+                      type="number"
+                      min="1900"
+                      max="2030"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="rider-country">Rider's Country</Label>
+                    <Input
+                      id="rider-country"
+                      name="rider-country"
+                      placeholder="e.g., USA"
                       required
                     />
                   </div>
@@ -89,15 +140,18 @@ export default function Predict() {
                       id="team"
                       name="team"
                       placeholder="e.g., UAE Team Emirates"
+                      required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="recent-wins">Recent Wins</Label>
+                    <Label htmlFor="time-hours">Time in Hours</Label>
                     <Input
-                      id="recent-wins"
-                      name="recent-wins"
+                      id="time-hours"
+                      name="time-hours"
                       type="number"
-                      placeholder="5"
+                      step="0.01"
+                      placeholder="e.g., 94.5"
+                      required
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
@@ -106,12 +160,8 @@ export default function Predict() {
                   
                   <div className="mt-4 p-4 bg-muted rounded-lg">
                     <p className="text-sm text-muted-foreground">
-                      <strong>Note:</strong> Connect your FastAPI backend by updating the API endpoint in the fetch call.
-                      Replace the placeholder timeout with:
+                      <strong>Example:</strong> Year: 2022, Country: USA, Team: UAE Team Emirates, Time: 94 hours
                     </p>
-                    <code className="block mt-2 p-2 bg-background rounded text-xs">
-                      fetch('http://your-fastapi-url/predict', &#123; method: 'POST', ... &#125;)
-                    </code>
                   </div>
                 </form>
               </CardContent>
@@ -134,6 +184,15 @@ export default function Predict() {
                       <p className="text-sm text-muted-foreground mb-2">Win Probability</p>
                       <p className="text-5xl font-bold text-primary mb-2">{prediction.probability}</p>
                       <p className="text-sm text-muted-foreground">Confidence: {prediction.confidence}</p>
+                      <div className="mt-4">
+                        <span className={`inline-block px-4 py-2 rounded-full text-sm font-semibold ${
+                          prediction.winnerPrediction === 1 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100' 
+                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100'
+                        }`}>
+                          {prediction.winnerPrediction === 1 ? '🏆 Predicted Winner' : '❌ Not Predicted to Win'}
+                        </span>
+                      </div>
                     </div>
                     
                     <div>
@@ -162,24 +221,19 @@ export default function Predict() {
             <CardHeader>
               <CardTitle>Power BI Analytics Integration</CardTitle>
               <CardDescription>
-                Embed your Power BI reports and dashboards here
+                Tour de France Performance Dashboard
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="bg-muted rounded-lg p-8 text-center">
-                <p className="text-muted-foreground mb-4">
-                  Power BI iframe will be embedded here. Use the Power BI embed code:
-                </p>
-                <code className="block p-4 bg-background rounded text-sm text-left">
-                  &lt;iframe<br/>
-                  &nbsp;&nbsp;title="Your Report"<br/>
-                  &nbsp;&nbsp;width="100%"<br/>
-                  &nbsp;&nbsp;height="600"<br/>
-                  &nbsp;&nbsp;src="YOUR_POWER_BI_EMBED_URL"<br/>
-                  &nbsp;&nbsp;frameborder="0"<br/>
-                  &nbsp;&nbsp;allowFullScreen<br/>
-                  &gt;&lt;/iframe&gt;
-                </code>
+              <div className="rounded-lg overflow-hidden shadow-lg">
+                <iframe
+                  title="Tour de France Analytics Dashboard"
+                  width="100%"
+                  height="700"
+                  src="https://app.powerbi.com/reportEmbed?reportId=d744e19e-74c8-4a16-96ab-3ed3251a36a3&autoAuth=true&ctid=604f1a96-cbe8-43f8-abbf-f8eaf5d85730"
+                  frameBorder="0"
+                  allowFullScreen
+                ></iframe>
               </div>
             </CardContent>
           </Card>
