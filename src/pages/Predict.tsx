@@ -85,9 +85,14 @@ export default function Predict() {
     }
   };
 
+
+
   return (
     <div className="min-h-screen bg-background">
+      
+
       <Navbar />
+      
       
       <div className="pt-24 pb-16 px-4">
         <div className="container mx-auto max-w-5xl">
@@ -403,61 +408,72 @@ export default function Predict() {
             </Card>
           </TeamManagerOnly>
 
-          <PartnerOnly>
-            <Card className="mt-8 animate-fade-in border-2 border-green-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  📊 Media & Sponsorship Dashboard
-                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                    Partner Access
-                  </span>
-                </CardTitle>
-                <CardDescription>
-                  Winner statistics and media impact analytics
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-lg overflow-hidden shadow-lg">
-                  <iframe
-                    title="Tour de France Media Dashboard"
-                    width="100%"
-                    height="500"
-                    src="https://app.powerbi.com/reportEmbed?reportId=media-report&autoAuth=true"
-                    frameBorder="0"
-                    allowFullScreen
-                  ></iframe>
-                </div>
-              </CardContent>
-            </Card>
-          </PartnerOnly>
+       {/* Partner Dashboard — dynamic based on role */}
+<PartnerOnly>
+  <Card className="mt-8 animate-fade-in border-2 border-green-200">
+    <CardHeader>
+      <CardTitle className="flex items-center gap-2">
+        📊 Media & Sponsorship Dashboard
+        <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+          Partner Access
+        </span>
+      </CardTitle>
+      <CardDescription>
+        Winner statistics and media impact analytics
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <div className="rounded-lg overflow-hidden shadow-lg">
+        <iframe
+          title="Tour de France Media Dashboard"
+          width="100%"
+          height="500"
+          src={
+            hasRole(["partner"])
+              ? "https://app.powerbi.com/reportEmbed?reportId=a3911d8d-a42b-416f-8899-1db6d401c0d0&autoAuth=true&ctid=604f1a96-cbe8-43f8-abbf-f8eaf5d85730"
+              : "https://app.powerbi.com/reportEmbed?reportId=media-report&autoAuth=true"
+          }
+          frameBorder="0"
+          allowFullScreen
+        ></iframe>
+      </div>
+    </CardContent>
+  </Card>
+</PartnerOnly>
 
-          <RoleGuard allowedRoles={['viewer']}>
-            <Card className="mt-8 animate-fade-in border-2 border-gray-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  📊 Public Statistics
-                  <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full">
-                    Public Access
-                  </span>
-                </CardTitle>
-                <CardDescription>
-                  General Tour de France winner statistics and historical data
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-lg overflow-hidden shadow-lg">
-                  <iframe
-                    title="Tour de France Public Dashboard"
-                    width="100%"
-                    height="400"
-                    src="https://app.powerbi.com/reportEmbed?reportId=public-report&autoAuth=true"
-                    frameBorder="0"
-                    allowFullScreen
-                  ></iframe>
-                </div>
-              </CardContent>
-            </Card>
-          </RoleGuard>
+
+     <RoleGuard allowedRoles={['viewer']}>
+  <Card className="mt-8 animate-fade-in border-2 border-gray-200">
+    <CardHeader>
+      <CardTitle className="flex items-center gap-2">
+        📊 Public Statistics
+        <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full">
+          Public Access
+        </span>
+      </CardTitle>
+      <CardDescription>
+        General Tour de France winner statistics and historical data
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <div className="rounded-lg overflow-hidden shadow-lg">
+        <iframe
+          title="Fans View"
+          width="100%"
+          height="500"
+          src={
+            hasRole(['viewer'])
+              ? "https://app.powerbi.com/reportEmbed?reportId=a743b73e-6698-4114-88a2-c340b338d9a8&autoAuth=true&ctid=604f1a96-cbe8-43f8-abbf-f8eaf5d85730"
+              : "https://app.powerbi.com/reportEmbed?reportId=public-report&autoAuth=true"
+          }
+          frameBorder="0"
+          allowFullScreen
+        ></iframe>
+      </div>
+    </CardContent>
+  </Card>
+</RoleGuard>
+
         </div>
       </div>
     </div>

@@ -27,10 +27,16 @@ export function Navbar() {
   return (
     <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <Trophy className="h-8 w-8 text-primary" />
-          <span className="text-xl font-bold">TdF Predictor</span>
-        </Link>
+                 <Link 
+            to="/" 
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <img 
+              src="/public/RollerData.png" 
+              alt="RollerData Logo" 
+              className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12"             />
+            <span className="text-xl font-bold">Pedal Predict</span>
+          </Link>
 
         <div className="hidden md:flex items-center gap-6">
           <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
