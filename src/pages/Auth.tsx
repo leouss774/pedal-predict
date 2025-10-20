@@ -6,11 +6,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Trophy } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+
+interface AuthResponse {
+  access_token: string;
+  role: string;
+  email?: string;
+  msg?: string;
+}
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,14 +30,43 @@ export default function Auth() {
     const email = formData.get("signup-email") as string;
     const password = formData.get("signup-password") as string;
 
-    // Placeholder for backend integration
-    setTimeout(() => {
-      toast({
-        title: "Account created!",
-        description: "Welcome to TdF Predictor. Please sign in.",
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/auth/register', { 
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "Account created successfully!",
+          description: "You can now sign in to your account.",
+          variant: "default",
+        });
+        const signInTab = document.querySelector('[value="signin"]') as HTMLButtonElement;
+        if (signInTab) {
+          signInTab.click();
+        }
+      } else {
+        toast({
+          title: "Registration error",
+          description: data.msg || "An error occurred",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Connection error",
+        description: "Unable to contact the server",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -38,14 +77,43 @@ export default function Auth() {
     const email = formData.get("signin-email") as string;
     const password = formData.get("signin-password") as string;
 
-    // Placeholder for backend integration
-    setTimeout(() => {
-      toast({
-        title: "Signed in successfully!",
-        description: "Welcome back to TdF Predictor.",
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
+
+      const data: AuthResponse = await response.json();
+
+      if (response.ok) {
+        login(data.access_token, { email, role: data.role });
+        
+        toast({
+          title: "Login successful!",
+          description: `Welcome ${email} (Role: ${data.role})`,
+          variant: "default",
+        });
+        
+        navigate('/');
+      } else {
+        toast({
+          title: "Login error",
+          description: data.msg || "Email or password incorrect",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Connection error",
+        description: "Unable to contact the server",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -62,7 +130,9 @@ export default function Auth() {
         <Card className="animate-fade-in shadow-[var(--shadow-elevated)]">
           <CardHeader>
             <CardTitle>Welcome</CardTitle>
-            <CardDescription>Sign in to access predictions and insights</CardDescription>
+            <CardDescription>
+              Sign in to access predictions and analytics
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="signin" className="w-full">
@@ -79,7 +149,7 @@ export default function Auth() {
                       id="signin-email"
                       name="signin-email"
                       type="email"
-                      placeholder="you@example.com"
+                      placeholder="admin@aso.com"
                       required
                     />
                   </div>
@@ -123,7 +193,7 @@ export default function Auth() {
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Creating account..." : "Sign Up"}
+                    {isLoading ? "Creating account..." : "Create Account"}
                   </Button>
                 </form>
               </TabsContent>

@@ -4,8 +4,11 @@ import { NewsCard } from "@/components/NewsCard";
 import { Trophy, TrendingUp, Users, Target } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-cycling.jpg";
+import { useAuth } from "@/contexts/AuthContext"; // ✅ Import ajouté
 
 export default function Index() {
+  const { isAuthenticated } = useAuth(); // ✅ Récupère l'état d'authentification
+
   // Latest Tour de France updates from web scraping
   const tdfUpdates = [
     {
@@ -84,11 +87,15 @@ export default function Index() {
                 Make Prediction
               </Button>
             </Link>
-            <Link to="/auth">
-              <Button variant="outline" size="xl" className="border-2 border-white text-white hover:bg-white hover:text-foreground">
-                Get Started
-              </Button>
-            </Link>
+            
+            {/* ✅ Affiche "Get Started" seulement si NON connecté */}
+            {!isAuthenticated && (
+              <Link to="/auth">
+                <Button variant="outline" size="xl" className="border-2 border-white text-white hover:bg-white hover:text-foreground">
+                  Get Started
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -151,11 +158,15 @@ export default function Index() {
                 Start Predicting
               </Button>
             </Link>
-            <Link to="/auth">
-              <Button variant="outline" size="xl">
-                Create Account
-              </Button>
-            </Link>
+            
+            {/* ✅ Affiche "Create Account" seulement si NON connecté */}
+            {!isAuthenticated && (
+              <Link to="/auth">
+                <Button variant="outline" size="xl">
+                  Create Account
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </section>
